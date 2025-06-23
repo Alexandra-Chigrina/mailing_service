@@ -2,8 +2,11 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 from django.urls import reverse_lazy
+from django.views.generic import TemplateView
+
 
 from .models import Client, Message, Mailing, MailingAttempt
+from .forms import ClientForm, MessageForm, MailingForm
 
 
 class ClientListView(LoginRequiredMixin, ListView):
@@ -27,30 +30,34 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
 
 class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
-    fields = ['email', 'full_name', 'comment']
+    form_class = ClientForm
     template_name = 'mailing/client_form.html'
     success_url = reverse_lazy('mailing:client_list')
 
     def form_valid(self, form):
-        client = form.save()
-        user = self.request.user
-        client.owner = user
-        client.save()
-
+        form.instance.owner = self.request.user
         return super().form_valid(form)
 
 
 class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
-    fields = ['email', 'full_name', 'comment']
+    form_class = ClientForm
     template_name = 'mailing/client_form.html'
-    success_url = reverse_lazy('mailing:client_list')
+
+    def get_success_url(self):
+        return reverse_lazy('mailing:client_detail', kwargs={'pk': self.object.pk})
+
+    def get_queryset(self):
+        return Client.objects.filter(owner=self.request.user)
 
 
 class ClientDeleteView(LoginRequiredMixin, DeleteView):
     model = Client
     template_name = 'mailing/client_confirm_delete.html'
-    success_url = reverse_lazy("mailing:client_list")
+    success_url = reverse_lazy('mailing:client_list')
+
+    def get_queryset(self):
+        return Client.objects.filter(owner=self.request.user)
 
 
 class MessageListView(LoginRequiredMixin, ListView):
@@ -74,30 +81,32 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
 
 class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
-    fields = ['subject', 'body']
+    form_class = MessageForm
     template_name = 'mailing/message_form.html'
     success_url = reverse_lazy('mailing:message_list')
 
     def form_valid(self, form):
-        client = form.save()
-        user = self.request.user
-        client.owner = user
-        client.save()
-
+        form.instance.owner = self.request.user
         return super().form_valid(form)
 
 
 class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
-    fields = ['subject', 'body']
+    form_class = MessageForm
     template_name = 'mailing/message_form.html'
     success_url = reverse_lazy('mailing:message_list')
+
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
 
 
 class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
     template_name = 'mailing/message_confirm_delete.html'
-    success_url = reverse_lazy("mailing:message_list")
+    success_url = reverse_lazy('mailing:message_list')
+
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
 
 
 class MailingListView(LoginRequiredMixin, ListView):
@@ -121,30 +130,46 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
-    fields = ['start_time', 'end_time', 'status', 'message', 'clients']
+    form_class = MailingForm
     template_name = 'mailing/mailing_form.html'
     success_url = reverse_lazy('mailing:mailing_list')
 
-    def form_valid(self, form):
-        client = form.save()
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
         user = self.request.user
-        client.owner = user
-        client.save()
 
+        form.fields['message'].queryset = Message.objects.filter(owner=user)
+        form.fields['clients'].queryset = Client.objects.filter(owner=user)
+        return form
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        form.instance.status = 'Создана'
         return super().form_valid(form)
 
 
 class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailing
-    fields = ['start_time', 'end_time', 'status', 'message', 'clients']
+    form_class = MailingForm
     template_name = 'mailing/mailing_form.html'
     success_url = reverse_lazy('mailing:mailing_list')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = self.request.user
+
+        form.fields['message'].queryset = Message.objects.filter(owner=user)
+        form.fields['clients'].queryset = Client.objects.filter(owner=user)
+        return form
 
 
 class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailing
     template_name = 'mailing/mailing_confirm_delete.html'
     success_url = reverse_lazy('mailing:mailing_list')
+
+    def get_queryset(self):
+        return Mailing.objects.filter(owner=self.request.user)
 
 
 class MailingAttemptListView(LoginRequiredMixin, ListView):
@@ -153,12 +178,12 @@ class MailingAttemptListView(LoginRequiredMixin, ListView):
     context_object_name = 'attempts'
 
     def get_queryset(self):
-        return MailingAttempt.objects.filter(mailing__owner=self.request.user).select_related('mailing').order_by(
-            '-timestamp')
+        return (
+            MailingAttempt.objects.filter(mailing__owner=self.request.user)
+            .select_related('mailing')
+            .order_by('-timestamp')
+        )
 
-
-from django.views.generic import TemplateView
-from mailing.models import Mailing, Client
 
 class HomePageView(TemplateView):
     template_name = 'mailing/home.html'
