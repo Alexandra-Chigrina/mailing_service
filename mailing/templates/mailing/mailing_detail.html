@@ -23,11 +23,17 @@
             </ul>
 
             <hr>
-            {% if user == client.owner %}
-                <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="btn btn-outline-primary mt-3">Редактировать</a>
-                <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="btn btn-outline-primary mt-3">Удалить</a>
-            {% endif %}
-            <a href="{% url 'mailing:mailing_list' %}" class="btn btn-outline-primary mt-3">Назад к списку</a>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                {% if user == mailing.owner %}
+                    <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="btn btn-outline-primary mt-3">Редактировать</a>
+                    <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="btn btn-outline-primary mt-3">Удалить</a>
+                {% endif %}
+                <form method="post" action="{% url 'mailing:send_mailing' mailing.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary mt-3">Отправить сейчас</button>
+                </form>
+                <a href="{% url 'mailing:mailing_list' %}" class="btn btn-outline-primary mt-3">Назад к списку</a>
+            </div>
         </div>
     </div>
 </div>

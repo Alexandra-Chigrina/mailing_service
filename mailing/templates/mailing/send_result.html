@@ -1,0 +1,22 @@
+{% extends 'mailing/base.html' %}
+{% load mailing_tags %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Результаты отправки рассылки №{{ mailing.id }}</h2>
+
+        <ul class="list-group">
+            {% for result in results %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ result.client.full_name }} — {{ result.client.email }}
+                    {% if result.status == 'успешно' %}
+                        <span class="badge bg-success">Успешно</span>
+                    {% else %}
+                        <span class="badge bg-danger">Ошибка</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <a href="{% url 'mailing:mailing_detail' mailing.pk %}" class="btn btn-outline-primary mt-4">Назад к рассылке</a>
+    </div>
+{% endblock %}

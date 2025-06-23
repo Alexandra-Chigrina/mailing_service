@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 from django.urls import reverse_lazy
@@ -7,6 +8,7 @@ from django.views.generic import TemplateView
 
 from .models import Client, Message, Mailing, MailingAttempt
 from .forms import ClientForm, MessageForm, MailingForm
+from .services import send_mailing
 
 
 class ClientListView(LoginRequiredMixin, ListView):
@@ -176,6 +178,7 @@ class MailingAttemptListView(LoginRequiredMixin, ListView):
     model = MailingAttempt
     template_name = 'mailing/attempt_list.html'
     context_object_name = 'attempts'
+    paginate_by = 10
 
     def get_queryset(self):
         return (
@@ -203,3 +206,13 @@ class HomePageView(TemplateView):
             context['user_clients'] = Client.objects.filter(owner=self.request.user).count()
 
         return context
+
+
+class SendMailingView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        mailing = get_object_or_404(Mailing, pk=pk, owner=request.user)
+        results = send_mailing(mailing)
+        return render(request, 'mailing/send_result.html', {
+            'mailing': mailing,
+            'results': results
+        })
