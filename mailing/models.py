@@ -13,6 +13,9 @@ class Client(models.Model):
         verbose_name = 'Получатель рассылки'
         verbose_name_plural = 'Получатели рассылки'
         ordering = ['full_name']
+        permissions = [
+            ('view_all_clients', 'Может просматривать всех клиентов'),
+        ]
 
     def __str__(self):
         return f"{self.full_name} <{self.email}>"
@@ -26,6 +29,9 @@ class Message(models.Model):
     class Meta:
         verbose_name = 'Сообщение'
         verbose_name_plural = 'Сообщения'
+        permissions = [
+            ('view_all_messages', 'Может просматривать все сообщения'),
+        ]
 
     def __str__(self):
         return self.subject
@@ -59,6 +65,10 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
+        permissions = [
+            ('view_all_mailings', 'Может просматривать все рассылки'),
+            ('deactivate_mailing', 'Может отключать рассылки')
+        ]
 
     def __str__(self):
         return f'Рассылка #{self.id} - {self.status}'

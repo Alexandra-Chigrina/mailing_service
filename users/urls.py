@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 
 from users.apps import UsersConfig
 from users.views import ProfileUpdateView, RegisterView, email_verification, ProfileDetailView, CustomPasswordResetView, \
-    CustomPasswordResetConfirmView
+    CustomPasswordResetConfirmView, BlockUserView, ProfileListView
 
 app_name = UsersConfig.name
 
@@ -26,4 +26,6 @@ urlpatterns = [
     path('reset/done/',
          auth_views.PasswordResetCompleteView.as_view(template_name='users/password_reset_complete.html'),
          name='password_reset_complete'),
+    path('user/<int:pk>/block/', BlockUserView.as_view(), name='block_user'),
+    path('users/', ProfileListView.as_view(), name='profile_list'),
 ]

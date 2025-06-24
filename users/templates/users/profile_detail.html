@@ -17,6 +17,13 @@
                         <li><strong>Email:</strong> {{ user.email }}</li>
                         <li><strong>Номер телефона:</strong> {{ user.phone_number }}</li>
                         <li><strong>Страна:</strong> {{ user.country }}</li>
+                        <li><strong>Статус:</strong>
+                            {% if user.is_blocked %}
+                            Заблокирован
+                            {% else %}
+                            Активен
+                            {% endif %}
+                        </li>
                     </ul>
                     <a class="btn btn-lg btn-block btn-outline-primary"
                        href="{% url 'users:profile_edit' %}"

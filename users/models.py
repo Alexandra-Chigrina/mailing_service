@@ -8,6 +8,7 @@ class CustomUser(AbstractUser):
     avatar = models.ImageField(upload_to='users/avatars/', verbose_name='Аватар', blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name='Телефон')
     country = models.CharField(max_length=100, blank=True, null=True, verbose_name='Страна')
+    is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован")
 
     token = models.CharField(max_length=100, verbose_name='Token', blank=True, null=True)
 

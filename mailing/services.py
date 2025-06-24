@@ -1,11 +1,15 @@
 from django.core.mail import send_mail
 from django.utils import timezone
+import logging
 
 from config.settings import EMAIL_HOST_USER
 from .models import MailingAttempt
 
 
+logger = logging.getLogger('mailing')
+
 def send_mailing(mailing):
+    logger.info(f"Начата рассылка ID={mailing.pk} пользователю {mailing.owner}")
     mailing.status = 'Запущена'
     mailing.save()
 
@@ -23,32 +27,38 @@ def send_mailing(mailing):
 
             MailingAttempt.objects.create(
                 mailing=mailing,
-                status='успешно',
+                status='ok',
                 server_response='Отправлено успешно',
                 timestamp=timezone.now()
             )
 
+            logger.info(f"Успешно отправлено письмо клиенту {client.email} для рассылки ID={mailing.pk}")
+
             results.append({
                 'client': client,
-                'status': 'успешно',
+                'status': 'ok',
                 'response': 'Отправлено успешно'
             })
 
         except Exception as e:
             MailingAttempt.objects.create(
                 mailing=mailing,
-                status='ошибка',
+                status='fail',
                 server_response=str(e),
                 timestamp=timezone.now()
             )
 
+            logger.error(f"Ошибка при отправке письма клиенту {client.email} (рассылка ID={mailing.pk}): {error_message}")
+
             results.append({
                 'client': client,
-                'status': 'ошибка',
+                'status': 'fail',
                 'response': str(e)
             })
 
     mailing.status = 'Завершена'
     mailing.save()
+
+    logger.info(f"Завершена рассылка ID={mailing.pk} пользователю {mailing.owner}")
 
     return results

@@ -7,6 +7,9 @@ load_dotenv(override=True)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True if os.getenv('DEBUG') == 'True' else False
@@ -22,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'mailing',
     'users',
+    'django_apscheduler',
 ]
 
 MIDDLEWARE = [
@@ -121,6 +125,46 @@ if CACHE_ENABLED:
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'CACHE_LOCATION': os.getenv('LOCATION'),
+            'LOCATION': os.getenv('LOCATION'),
         }
     }
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} [{name}:{lineno}] {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'mailing_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'mailing.log'),
+            'formatter': 'verbose',
+            'encoding': 'utf-8',  # 👈 ВАЖНО: добавляем кодировку
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'mailing': {
+            'handlers': ['mailing_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
+    },
+}

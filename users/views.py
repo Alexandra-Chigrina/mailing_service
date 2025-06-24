@@ -1,15 +1,18 @@
 import secrets
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import CreateView, UpdateView, DetailView
+from django.views.generic import CreateView, UpdateView, DetailView, ListView, View
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.http import HttpResponseForbidden
+from django.contrib import messages
 
 from config.settings import EMAIL_HOST_USER
 from users.forms import CustomUserCreationForm, ProfileUpdateForm
 from users.models import CustomUser
+
 
 
 class RegisterView(CreateView):
@@ -62,6 +65,16 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
 
+class ProfileListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = CustomUser
+    template_name = 'users/profile_list.html'
+    context_object_name = 'users'
+    paginate_by = 10
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='Менеджеры').exists()
+
+
 class ProfileDetailView(LoginRequiredMixin, DetailView):
     model = CustomUser
     template_name = 'users/profile_detail.html'
@@ -79,3 +92,27 @@ class CustomPasswordResetView(PasswordResetView):
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'users/password_reset_confirm.html'
     success_url = reverse_lazy('users:password_reset_complete')
+
+
+class BlockUserView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.groups.filter(name='Менеджеры').exists()
+
+    def post(self, request, pk):
+        user_to_toggle = get_object_or_404(CustomUser, pk=pk)
+
+        if user_to_toggle == request.user:
+            return HttpResponseForbidden('Вы не можете заблокировать самого себя.')
+
+        if user_to_toggle.is_superuser:
+            return HttpResponseForbidden('Нельзя блокировать суперпользователя.')
+
+        user_to_toggle.is_blocked = not user_to_toggle.is_blocked
+        user_to_toggle.save()
+
+        if user_to_toggle.is_blocked:
+            messages.success(request, f'Пользователь {user_to_toggle.email} успешно заблокирован.')
+        else:
+            messages.success(request, f'Пользователь {user_to_toggle.email} снова активен.')
+
+        return redirect('users:profile_list')
