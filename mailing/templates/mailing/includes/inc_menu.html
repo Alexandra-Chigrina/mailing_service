@@ -10,7 +10,7 @@
             <a class="btn btn-outline-primary" href="{% url 'mailing:message_list' %}">Сообщения</a>
             <a class="btn btn-outline-primary" href="{% url 'mailing:attempt_list' %}">Попытки</a>
             <a class="btn btn-outline-primary" href="{% url 'mailing:mailing_report' %}">Статистика</a>
-            {% if perms.mailing.deactivate_mailing %}
+            {% if user.groups.all.0.name == "Менеджеры" %}
             <a class="btn btn-outline-success" href="{% url 'users:profile_list' %}">Пользователи</a>
             {% endif %}
             <a class="btn btn-outline-secondary" href="{% url 'users:profile' %}">Профиль</a>

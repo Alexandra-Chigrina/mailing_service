@@ -48,7 +48,7 @@ def send_mailing(mailing):
                 timestamp=timezone.now()
             )
 
-            logger.error(f"Ошибка при отправке письма клиенту {client.email} (рассылка ID={mailing.pk}): {error_message}")
+            logger.error(f"Ошибка при отправке письма клиенту {client.email} (рассылка ID={mailing.pk}): {e}")
 
             results.append({
                 'client': client,
@@ -56,7 +56,10 @@ def send_mailing(mailing):
                 'response': str(e)
             })
 
-    mailing.status = 'Завершена'
+    if mailing.period == 'none':
+        mailing.status = 'Завершена'
+    else:
+        mailing.status = 'Создана'
     mailing.save()
 
     logger.info(f"Завершена рассылка ID={mailing.pk} пользователю {mailing.owner}")

@@ -8,6 +8,7 @@ from django.http import HttpResponseForbidden
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.views.decorators.vary import vary_on_cookie
+import logging
 
 
 from .models import Client, Message, Mailing, MailingAttempt
@@ -15,6 +16,9 @@ from .forms import ClientForm, MessageForm, MailingForm
 from .services import send_mailing
 from .mixins import OwnerOrManagerMixin
 from users.mixins import BlockCheckMixin
+
+
+logger = logging.getLogger('mailing')
 
 
 class ClientListView(BlockCheckMixin, LoginRequiredMixin, ListView):
@@ -249,7 +253,9 @@ class HomePageView(TemplateView):
 class SendMailingView(BlockCheckMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         mailing = get_object_or_404(Mailing, pk=pk, owner=request.user)
+        logger.info(f"Пользователь {request.user} вручную запустил рассылку ID={mailing.pk}")
         results = send_mailing(mailing)
+        logger.info(f"Ручная рассылка ID={mailing.pk} завершена")
         return render(request, 'mailing/send_result.html', {
             'mailing': mailing,
             'results': results
@@ -282,7 +288,9 @@ class StopMailingView(BlockCheckMixin, LoginRequiredMixin, View):
         if mailing.owner == user or user.groups.filter(name='Менеджеры').exists():
             mailing.status = 'Завершена'
             mailing.save()
+            logger.info(f"Рассылка ID={mailing.pk} была остановлена пользователем {user}")
             messages.success(request, 'Рассылка отключена')
             return redirect('mailing:mailing_detail', pk=pk)
 
+        logger.warning(f"Попытка несанкционированной остановки рассылки ID={mailing.pk} пользователем {user}")
         return HttpResponseForbidden('У вас нет прав отключить эту рассылку.')

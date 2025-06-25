@@ -17,11 +17,16 @@ def send_scheduled_mailings():
     now = timezone.now()
     mailings = Mailing.objects.filter(status='Создана', start_time__lte=now, end_time__gte=now)
 
+    logger.info(f"Найдено {mailings.count()} рассылок для отправки")
+
     for mailing in mailings:
         logger.info(f"Отправка рассылки {mailing.pk} пользователю {mailing.owner}")
-        send_mailing(mailing)
+        try:
+            send_mailing(mailing)
+        except Exception as e:
+            logger.error(f"Ошибка при отправке рассылки ID={mailing.pk}: {e}")
+            continue
 
-        # Вычисляем интервал между start и end
         period_delta = mailing.end_time - mailing.start_time
 
         if mailing.period == 'daily':
@@ -43,6 +48,8 @@ def send_scheduled_mailings():
             mailing.status = 'Завершена'
 
         mailing.save()
+        logger.info(f"Рассылка ID={mailing.pk} завершена и обновлена")
+
 
 
 def delete_old_job_executions(max_age=604_800):
