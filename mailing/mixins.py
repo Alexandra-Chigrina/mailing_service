@@ -7,10 +7,10 @@ class OwnerOrManagerMixin(UserPassesTestMixin):
         obj = self.get_object()
         user = self.request.user
 
-        if user.groups.filter(name='Менеджеры').exists():
+        if user.groups.filter(name="Менеджеры").exists():
             return obj.owner == user
 
         return obj.owner == user
 
     def handle_no_permission(self):
-        return HttpResponseForbidden('У вас нет прав для редактирования этого объекта.')
+        return HttpResponseForbidden("У вас нет прав для редактирования этого объекта.")

@@ -5,13 +5,13 @@ from django.core.management.base import BaseCommand
 class Command(BaseCommand):
     def handle(self, *args, **options):
         User = get_user_model()
-        user = User.objects.create(email='a.chigrina1989@gmail.com')
+        user = User.objects.create(email="a.chigrina1989@gmail.com")
 
-        user.set_password('Zxcv1234')
+        user.set_password("Zxcv1234")
 
         user.is_staff = True
         user.is_superuser = True
 
         user.save()
 
-        self.stdout.write(self.style.SUCCESS(f'Successfully created admin user with email {user.email}!'))
+        self.stdout.write(self.style.SUCCESS(f"Successfully created admin user with email {user.email}!"))
