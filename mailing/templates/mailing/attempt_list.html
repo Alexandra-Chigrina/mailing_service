@@ -1,0 +1,55 @@
+{% extends 'mailing/base.html' %}
+{% load mailing_tags %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex flex-column align-items-center mb-4">
+        <h2 class="text-center mb-4">Попытки отправки</h2>
+        <a href="{% url 'mailing:mailing_list' %}" class="btn btn-outline-primary">К рассылкам</a>
+    </div>
+
+    {% if attempts %}
+        <div class="list-group">
+            {% for attempt in attempts %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Рассылка №{{ attempt.mailing.id }} → {{ attempt.client.full_name }}</h5>
+                        <small class="text-muted">{{ attempt.timestamp|date:"d.m.Y H:i" }}</small>
+                    </div>
+                    <p class="mb-1">Статус: {{ attempt.get_status_display }}</p>
+                    {% if attempt.server_response %}
+                        <small>Ответ сервера: {{ attempt.server_response }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+    <nav aria-label="Page navigation" class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                  &laquo;
+                </a>
+              </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+              </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                  &raquo;
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+    {% else %}
+        <p class="text-center">Попытки отправки ещё не фиксировались.</p>
+    {% endif %}
+</div>
+{% endblock %}

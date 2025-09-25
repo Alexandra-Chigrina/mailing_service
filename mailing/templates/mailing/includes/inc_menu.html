@@ -1,0 +1,27 @@
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <h5 class="my-0 font-weight-normal me-auto">Сервис рассылок</h5>
+
+    <div class="d-flex flex-wrap align-items-center gap-2 mt-3 mt-md-0 overflow-auto">
+        <a class="btn btn-primary" href="{% url 'mailing:home' %}">Главная</a>
+
+        {% if user.is_authenticated %}
+            <a class="btn btn-outline-primary" href="{% url 'mailing:mailing_list' %}">Рассылки</a>
+            <a class="btn btn-outline-primary" href="{% url 'mailing:client_list' %}">Клиенты</a>
+            <a class="btn btn-outline-primary" href="{% url 'mailing:message_list' %}">Сообщения</a>
+            <a class="btn btn-outline-primary" href="{% url 'mailing:attempt_list' %}">Попытки</a>
+            <a class="btn btn-outline-primary" href="{% url 'mailing:mailing_report' %}">Статистика</a>
+            {% if user.groups.all.0.name == "Менеджеры" %}
+            <a class="btn btn-outline-success" href="{% url 'users:profile_list' %}">Пользователи</a>
+            {% endif %}
+            <a class="btn btn-outline-secondary" href="{% url 'users:profile' %}">Профиль</a>
+
+            <form method="post" action="{% url 'users:logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary">Выход</button>
+            </form>
+        {% else %}
+            <a class="btn btn-outline-secondary" href="{% url 'users:login' %}">Вход</a>
+            <a class="btn btn-outline-secondary" href="{% url 'users:register' %}">Регистрация</a>
+        {% endif %}
+    </div>
+</div>

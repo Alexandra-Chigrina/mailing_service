@@ -1,0 +1,29 @@
+{% extends 'mailing/base.html' %}
+{% load mailing_tags %}
+{% block content %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">Авторизация</h1>
+</div>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-9 col-sm-12">
+            <div class="card mb-4 box-shadow">
+                <div class="card-body">
+                    <form method="post" action="" class="form-floating">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        {{ form.as_p }}
+
+                        <button type="submit" class="btn btn-lg btn-block btn-outline-primary">
+                            Войти
+                        </button>
+                        <a class="btn btn-lg btn-block btn-outline-primary" href="{% url 'users:password_reset' %}" role="button">Восстановление пароля</a>
+                        <a class="btn btn-lg btn-block btn-outline-primary" href="{% url 'mailing:home' %}" role="button">На главную</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

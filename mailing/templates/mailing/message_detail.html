@@ -1,0 +1,20 @@
+{% extends 'mailing/base.html' %}
+{% load mailing_tags %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h2 class="mb-0">Данные сообщения</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Тема:</strong> {{ message.subject }}</p>
+            <p><strong>Тело:</strong> {{ message.body }}</p>
+            {% if user == message.owner %}
+                <a href="{% url 'mailing:message_update' message.pk %}" class="btn btn-outline-primary mt-3">Редактировать</a>
+                <a href="{% url 'mailing:message_delete' message.pk %}" class="btn btn-outline-primary mt-3">Удалить</a>
+            {% endif %}
+            <a href="{% url 'mailing:message_list' %}" class="btn btn-outline-primary mt-3">Назад к списку</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

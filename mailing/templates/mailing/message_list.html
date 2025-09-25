@@ -1,0 +1,52 @@
+{% extends 'mailing/base.html' %}
+{% load mailing_tags %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex flex-column align-items-center mb-4">
+        <h2 class="text-center mb-4">Мои сообщения</h2>
+        <a href="{% url 'mailing:message_create' %}" class="btn btn-primary">Добавить сообщение</a>
+    </div>
+
+    {% if messages %}
+        <div class="list-group">
+            {% for message in messages %}
+                <a href="{% url 'mailing:message_detail' message.pk %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ forloop.counter }}. {{ message.subject }}</h5>
+                        <small class="text-muted">{{ message.created_at|date:"d.m.Y H:i" }}</small>
+                    </div>
+                    <p class="mb-1 text-truncate">{{ message.body }}</p>
+                </a>
+            {% endfor %}
+        </div>
+
+        <nav aria-label="Page navigation" class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                  &laquo;
+                </a>
+              </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+              </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                  &raquo;
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+    {% else %}
+        <p class="text-center">У вас пока нет клиентов.</p>
+    {% endif %}
+</div>
+{% endblock %}

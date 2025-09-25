@@ -1,0 +1,46 @@
+{% extends 'mailing/base.html' %}
+{% load mailing_tags %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h2 class="mb-0">Рассылка №{{ mailing.id }}</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Тема письма:</strong> {{ mailing.message.subject }}</p>
+            <p><strong>Статус:</strong> {{ mailing.status }}</p>
+            <p><strong>Периодичность:</strong> {{ mailing.get_period_display }}</p>
+            <p><strong>Начало отправки:</strong> {{ mailing.start_time|date:"d.m.Y H:i" }}</p>
+            <p><strong>Окончание отправки:</strong> {{ mailing.end_time|date:"d.m.Y H:i" }}</p>
+
+            <p><strong>Клиенты:</strong></p>
+            <ul>
+                {% for client in mailing.clients.all %}
+                    <li>{{ client.full_name }} — {{ client.email }}</li>
+                {% empty %}
+                    <li>Нет клиентов</li>
+                {% endfor %}
+            </ul>
+
+            <hr>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                {% if user == mailing.owner %}
+                    <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="btn btn-outline-primary mt-3">Редактировать</a>
+                    <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="btn btn-outline-primary mt-3">Удалить</a>
+                <form method="post" action="{% url 'mailing:send_mailing' mailing.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary mt-3">Отправить сейчас</button>
+                </form>
+                {% endif %}
+                {% if can_stop %}
+                    <form method="post" action="{% url 'mailing:stop_mailing' mailing.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-warning mt-3">Отключить рассылку</button>
+                    </form>
+                {% endif %}
+                <a href="{% url 'mailing:mailing_list' %}" class="btn btn-outline-primary mt-3">Назад к списку</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "mailing/base.html" %}
+{% load mailing_tags %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Статистика рассылок</h2>
+    <ul class="list-group mb-4">
+        <li class="list-group-item">Всего попыток отправки: <strong>{{ total_attempts }}</strong></li>
+        <li class="list-group-item text-success">Успешных: <strong>{{ successful_attempts }}</strong></li>
+        <li class="list-group-item text-danger">Неуспешных: <strong>{{ failed_attempts }}</strong></li>
+    </ul>
+
+    <h4>История попыток</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Дата и время</th>
+                <th>Рассылка</th>
+                <th>Статус</th>
+                <th>Ответ сервера</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attempt in attempts %}
+            <tr>
+                <td>{{ attempt.timestamp|date:"d.m.Y H:i" }}</td>
+                <td><a href="{% url 'mailing:mailing_detail' attempt.mailing.pk %}">№{{ attempt.mailing.pk }}</a></td>
+                <td>
+                    {% if attempt.status == 'ok' %}
+                        <span class="text-success">Успешно</span>
+                    {% else %}
+                        <span class="text-danger">Ошибка</span>
+                    {% endif %}
+                </td>
+                <td>{{ attempt.server_response }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center">Попыток ещё не было.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

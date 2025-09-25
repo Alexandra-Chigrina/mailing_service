@@ -1,0 +1,43 @@
+{% extends "mailing/base.html" %}
+{% load mailing_tags %}
+{% block content %}
+<div class="row g-4">
+
+  <div class="col-12 col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Общая статистика сервиса</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">Всего рассылок: <strong>{{ total_number }}</strong></li>
+          <li class="list-group-item">Активных рассылок: <strong>{{ total_active }}</strong></li>
+          <li class="list-group-item">Всего клиентов: <strong>{{ total_clients }}</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="col-12 col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Ваша статистика</h5>
+      </div>
+      <div class="card-body">
+        {% if user.is_authenticated %}
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Ваши рассылки: <strong>{{ user_mailings_number }}</strong></li>
+            <li class="list-group-item">Ваши активные рассылки: <strong>{{ user_active }}</strong></li>
+            <li class="list-group-item">Ваши клиенты: <strong>{{ user_clients }}</strong></li>
+          </ul>
+        {% else %}
+          <p class="mb-0">
+            <a href="{% url 'users:login' %}">Войдите</a>, чтобы увидеть персональную статистику.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
